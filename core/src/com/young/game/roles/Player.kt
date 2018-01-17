@@ -4,6 +4,8 @@ import java.util.*
 
 class Player(val race: Race, val name: String = "Player") {
 
+    var animProxy:RealPlayer? = null
+
     var level: Int = 0
         set(value) {
             field = value
@@ -96,6 +98,7 @@ class Player(val race: Race, val name: String = "Player") {
             attack(target, magic)
         }
         mp -= consume
+        println("${name}使用了法术${magic.name}，剩余MP${mp}点")
     }
 
     fun attack(target: Player, magic: Magic){
@@ -110,7 +113,7 @@ class Player(val race: Race, val name: String = "Player") {
         if (target.hp < 0) {
             target.hp = 0
         }
-        println("${name}用法术${magic.name}攻击了${target.name}，剩余法力${mp}点，扣血${value}点 -- ${name}攻击：${attackValue}，抗性：${resistance}% -- ${target.name}剩余${target.hp}点血")
+        println("${name}用法术${magic.name}攻击了${target.name}，扣血${value}点 -- ${name}攻击：${attackValue}，抗性：${resistance}% -- ${target.name}剩余${target.hp}点血")
     }
 
     fun getAttackValue(): Long {

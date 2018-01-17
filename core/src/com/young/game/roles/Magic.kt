@@ -1,8 +1,28 @@
 package com.young.game.roles
 
-abstract class Magic(val name:String, val type:Type) {
+import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.Animation
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 
-    enum class Type{
+abstract class Magic(val name: String, val type: Type, val imgFile: String? = null) {
+
+    private var anim: Animation<TextureRegion>? = null
+
+    init {
+        imgFile?.apply {
+            val region = TextureRegion(Texture(this))
+            val trsAttackMagic: Array<Array<TextureRegion>> = region.split(238, 384)
+            val array: com.badlogic.gdx.utils.Array<TextureRegion> = com.badlogic.gdx.utils.Array(20)
+            for (j in 0 until 17) {
+                array.add(trsAttackMagic[j][0])
+            }
+            anim = Animation(0.1f, array)
+        }
+
+    }
+
+
+    enum class Type {
 
         TYPE_NORMAL,
 
@@ -27,105 +47,107 @@ abstract class Magic(val name:String, val type:Type) {
         TYPE_GHOST_FORGOTTEN,
 
     }
-    val maxProficiency:Int = 25000
 
-    open fun getTargetCount():Int = 0
-    open fun getConsume():Long = 0
-    open fun getAttack(level:Int):Long = 0
+    val maxProficiency: Int = 25000
+
+    open fun getTargetCount(): Int = 0
+    open fun getConsume(): Long = 0
+    open fun getAttack(level: Int): Long = 0
+    open fun getAnimation(): Animation<TextureRegion>? = anim
 
 }
 
-class MagicImmortalV5: Magic("MagicImmortalV5", Type.TYPE_IMMORTAL_WIND) {
+class MagicImmortalV5 : Magic("MagicImmortalV5", Type.TYPE_IMMORTAL_WIND, "magic-thunder-5.png") {
     val baseAttack = 5000
     val baseConsume = 5000
     val maxConsume = 18000
-    var proficiency:Int = 0
+    var proficiency: Int = 0
 
-    override fun getTargetCount(): Int  = when {
-        proficiency>=5621 -> 5
-        proficiency>=558 -> 4
+    override fun getTargetCount(): Int = when {
+        proficiency >= 5621 -> 5
+        proficiency >= 558 -> 4
         else -> 3
     }
 
     override fun getConsume(): Long {
-        return baseConsume+((maxConsume-baseConsume)*proficiency/maxProficiency).toLong()
+        return baseConsume + ((maxConsume - baseConsume) * proficiency / maxProficiency).toLong()
     }
 
-    override fun getAttack(level:Int): Long {
-        return (baseAttack*(level/160.0)).toLong() + (proficiency*0.8).toLong()
+    override fun getAttack(level: Int): Long {
+        return (baseAttack * (level / 160.0)).toLong() + (proficiency * 0.8).toLong()
     }
 }
 
-class MagicImmortalV4: Magic("MagicImmortalV4", Type.TYPE_IMMORTAL_WIND) {
+class MagicImmortalV4 : Magic("MagicImmortalV4", Type.TYPE_IMMORTAL_WIND) {
     val baseAttack = 7500
     val baseConsume = 3000
     val maxConsume = 8000
-    var proficiency:Int = 0
+    var proficiency: Int = 0
 
     override fun getTargetCount(): Int = 1
 
     override fun getConsume(): Long {
-        return baseConsume+((maxConsume-baseConsume)*proficiency/maxProficiency).toLong()
+        return baseConsume + ((maxConsume - baseConsume) * proficiency / maxProficiency).toLong()
     }
 
-    override fun getAttack(level:Int): Long {
-        return (baseAttack*(level/160.0)).toLong() + (proficiency*1.2).toLong()
+    override fun getAttack(level: Int): Long {
+        return (baseAttack * (level / 160.0)).toLong() + (proficiency * 1.2).toLong()
     }
 }
 
-class MagicImmortalV3: Magic("MagicImmortalV3", Type.TYPE_IMMORTAL_WIND) {
+class MagicImmortalV3 : Magic("MagicImmortalV3", Type.TYPE_IMMORTAL_WIND) {
     val baseAttack = 2000
     val baseConsume = 1500
     val maxConsume = 5000
-    var proficiency:Int = 0
+    var proficiency: Int = 0
 
     override fun getTargetCount(): Int = when {
-        proficiency>=16610 -> 5
-        proficiency>=5215 -> 4
-        proficiency>=720 -> 3
+        proficiency >= 16610 -> 5
+        proficiency >= 5215 -> 4
+        proficiency >= 720 -> 3
         else -> 2
     }
 
     override fun getConsume(): Long {
-        return baseConsume+((maxConsume-baseConsume)*proficiency/maxProficiency).toLong()
+        return baseConsume + ((maxConsume - baseConsume) * proficiency / maxProficiency).toLong()
     }
 
-    override fun getAttack(level:Int): Long {
-        return (baseAttack*(level/160.0)).toLong() + (proficiency*0.5).toLong()
+    override fun getAttack(level: Int): Long {
+        return (baseAttack * (level / 160.0)).toLong() + (proficiency * 0.5).toLong()
     }
 }
 
-class MagicImmortalV2: Magic("MagicImmortalV2", Type.TYPE_IMMORTAL_WIND) {
+class MagicImmortalV2 : Magic("MagicImmortalV2", Type.TYPE_IMMORTAL_WIND) {
     val baseAttack = 2500
     val baseConsume = 600
     val maxConsume = 1500
-    var proficiency:Int = 0
+    var proficiency: Int = 0
 
     override fun getTargetCount(): Int = 1
 
     override fun getConsume(): Long {
-        return baseConsume+((maxConsume-baseConsume)*proficiency/maxProficiency).toLong()
+        return baseConsume + ((maxConsume - baseConsume) * proficiency / maxProficiency).toLong()
     }
 
-    override fun getAttack(level:Int): Long {
-        return (baseAttack*(level/160.0)).toLong() + (proficiency*0.6).toLong()
+    override fun getAttack(level: Int): Long {
+        return (baseAttack * (level / 160.0)).toLong() + (proficiency * 0.6).toLong()
     }
 }
 
-class MagicImmortalV1: Magic("MagicImmortalV1", Type.TYPE_IMMORTAL_WIND) {
+class MagicImmortalV1 : Magic("MagicImmortalV1", Type.TYPE_IMMORTAL_WIND) {
     val baseAttack = 1000
     val baseConsume = 100
     val maxConsume = 600
-    var proficiency:Int = 0
+    var proficiency: Int = 0
 
     override fun getTargetCount(): Int = 1
 
     override fun getConsume(): Long {
-        return baseConsume+((maxConsume-baseConsume)*proficiency/maxProficiency).toLong()
+        return baseConsume + ((maxConsume - baseConsume) * proficiency / maxProficiency).toLong()
     }
 
-    override fun getAttack(level:Int): Long {
-        return (baseAttack*(level/160.0)).toLong() + (proficiency*0.5).toLong()
+    override fun getAttack(level: Int): Long {
+        return (baseAttack * (level / 160.0)).toLong() + (proficiency * 0.5).toLong()
     }
 }
 
