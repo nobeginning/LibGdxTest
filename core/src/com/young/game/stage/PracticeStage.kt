@@ -39,8 +39,7 @@ class PracticeStage(viewport: Viewport) : Stage(viewport) {
 
     val camera: OrthographicCamera = OrthographicCamera(viewport.worldWidth, viewport.worldHeight)
     var tiledMapRenderer: OrthogonalTiledMapRenderer
-    val cp:Player = Player(Race.RACE_IMMORTAL, "P1")
-    var player: RealPlayer = RealPlayer(Texture("running.png"), Texture("standing.png"), cp)
+    var player: RealPlayer
 
     var cameraX = 0f
     var cameraY = 0f
@@ -58,6 +57,15 @@ class PracticeStage(viewport: Viewport) : Stage(viewport) {
     var isMoving = false
 
     init {
+        val cp1 = Player(Race.RACE_IMMORTAL, "P1")
+        cp1.level = 80
+        cp1.mpPoint = 320
+        player = RealPlayer(Texture("running.png"),
+                Texture("standing.png"),
+                null,
+                null,
+                Texture("attack-magic.png"),
+                RealPlayer.Status.STANDING, RealPlayer.FaceTo.RIGHT, cp1)
         addActor(player)
         addActor(btnLeft)
         addActor(btnDown)
@@ -183,7 +191,7 @@ class PracticeStage(viewport: Viewport) : Stage(viewport) {
     var offsetY: Float = 0f
     var playerOffsetX: Float = 0f
     var playerOffsetY: Float = 0f
-    val step = 2f
+    val step = 4f
     fun getRunObservable(direction: Direction): Observable<Vector3> {
         if (true) {
             val test = Observable.create<Vector3> {

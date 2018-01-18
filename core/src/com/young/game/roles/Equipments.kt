@@ -5,7 +5,7 @@ class CoatV1 : Equipment("CoatV1") {
     override fun getHealthValue(): Long = 100
     override fun getMagicValue(): Long = 20
     override fun getResistance(magicType:Magic.Type): Int = when(magicType){
-        Magic.Type.TYPE_IMMORTAL_WIND->100
+        Magic.Type.TYPE_IMMORTAL_WIND->70
         Magic.Type.TYPE_NORMAL->30
         else->0
     }

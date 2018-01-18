@@ -112,6 +112,12 @@ class Player(val race: Race, val name: String = "Player") {
         target.hp = target.hp - value
         if (target.hp < 0) {
             target.hp = 0
+            target.animProxy?.run {
+                dead()
+            }
+        }
+        target.animProxy?.run {
+            powerDown(value)
         }
         println("${name}用法术${magic.name}攻击了${target.name}，扣血${value}点 -- ${name}攻击：${attackValue}，抗性：${resistance}% -- ${target.name}剩余${target.hp}点血")
     }

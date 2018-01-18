@@ -13,14 +13,14 @@ class MyGdxGame : ApplicationAdapter() {
     internal lateinit var stage: Stage
 
     override fun create() {
-//        stage = PracticeStage(ScreenViewport())
-        stage = FightingStage(FillViewport(800f, 480f))
+//        stage = PracticeStage(FillViewport(1280f, 720f))
+        stage = FightingStage(FillViewport(1280f, 720f))
         Gdx.input.inputProcessor = stage
 //        practiceStage.addListener(InputEventListener())
     }
 
     override fun render() {
-        Gdx.gl.glClearColor(1f, 0f, 0f, 1f)
+        Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         stage.act()

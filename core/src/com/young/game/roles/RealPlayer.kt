@@ -1,17 +1,17 @@
 package com.young.game.roles
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.Animation
-import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.graphics.g2d.Sprite
-import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.graphics.g2d.*
+import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.utils.Align
 import com.young.game.stage.AnimActor
 import com.young.game.stage.Direction
+import com.young.game.tools.GifDecoder
 
 class RealPlayer(val corePlayer:Player) : Actor() {
 
@@ -20,7 +20,11 @@ class RealPlayer(val corePlayer:Player) : Actor() {
     }
 
     enum class Status {
-        RUNNING, STANDING, IN_FIGHTING, FIGHTING_RUN, FIGHTING_ATTACK, FIGHTING_MAGIC
+        RUNNING, STANDING, IN_FIGHTING, FIGHTING_BE_ATTACK, FIGHTING_RUN, FIGHTING_ATTACK, FIGHTING_MAGIC, FIGHTING_DEAD
+    }
+
+    enum class FaceTo{
+        LEFT, RIGHT
     }
 
     val col = 8
@@ -29,28 +33,35 @@ class RealPlayer(val corePlayer:Player) : Actor() {
     var stateTime = 0f
 
     var status: Status = Status.STANDING
+    var faceTo: FaceTo = FaceTo.RIGHT
     var direction: Direction = Direction.Down
     lateinit var runningAnimations: ArrayList<Animation<TextureRegion>>
     lateinit var standingAnimations: ArrayList<Animation<TextureRegion>>
     lateinit var fightingGoRunningAnimations: ArrayList<Animation<TextureRegion>>
     lateinit var fightingBackRunningAnimations: ArrayList<Animation<TextureRegion>>
     lateinit var fightingAttackMagicAnimations: ArrayList<Animation<TextureRegion>>
+    lateinit var fightingStandingRightAnimation: Animation<TextureRegion>
+    lateinit var fightingStandingLeftAnimation: Animation<TextureRegion>
+    lateinit var fightingDeadAnimation: Animation<TextureRegion>
+    lateinit var fightingBeAttackLeftAnimation: Animation<TextureRegion>
+    lateinit var fightingBeAttackRightAnimation: Animation<TextureRegion>
 
     constructor(runningTexture: Texture,
                 standingTexture: Texture, corePlayer: Player) :
             this(runningTexture,
                     standingTexture,
                     null, null, null,
-                    Status.STANDING, corePlayer)
+                    Status.STANDING, FaceTo.RIGHT, corePlayer)
 
     constructor(runningTexture: Texture,
                 standingTexture: Texture,
                 fightingRunningTexture: Texture?,
                 fightingAttackNormalTexture: Texture?,
                 fightingAttackMagicTexture: Texture?,
-                status: Status, corePlayer: Player) : this(corePlayer) {
+                status: Status, faceTo:FaceTo, corePlayer: Player) : this(corePlayer) {
         setSize(200f, 200f)
         this.status = status
+        this.faceTo = faceTo
         runningAnimations = ArrayList(row)
         standingAnimations = ArrayList(row)
 
@@ -89,7 +100,15 @@ class RealPlayer(val corePlayer:Player) : Actor() {
             val anim: Animation<TextureRegion> = Animation(0.08f, array)
             fightingAttackMagicAnimations.add(anim)
         }
+
+        fightingStandingRightAnimation = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, "attack-standing.gif")
+        fightingStandingLeftAnimation = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, "attack-standing-2.gif")
+        fightingDeadAnimation = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, "fighting-dead.gif")
+        fightingBeAttackLeftAnimation = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, "fighting-be-attack-left.gif")
+        fightingBeAttackRightAnimation = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, "fighting-be-attack-right.gif")
     }
+
+    public fun isDead():Boolean = corePlayer.hp<=0
 
     public fun stand() {
         status = Status.STANDING
@@ -108,12 +127,12 @@ class RealPlayer(val corePlayer:Player) : Actor() {
         this.direction = direction
     }
 
-    public fun attackWithMagic(targets:Array<RealPlayer>) {
+    public fun attackWithMagic(targets:List<RealPlayer>) {
         status = Status.FIGHTING_MAGIC
         stateTime = 0f
         direction = Direction.FightingRight
         val magic = MagicImmortalV5()
-        magic.proficiency = 3000
+        magic.proficiency = 10000
         val arr = mutableListOf<Player>()
         for (rp in targets){
             rp.beAttacked(magic)
@@ -129,31 +148,68 @@ class RealPlayer(val corePlayer:Player) : Actor() {
             animActor.setPosition(x-19, y-110)
             parent.addActor(animActor)
         }
+        stateTime = 0f
+        status = Status.FIGHTING_BE_ATTACK
+    }
+
+    public fun dead(){
+        stateTime = 0f
+        status = Status.FIGHTING_DEAD
     }
 
     public fun powerDown(num:Long){
-        val lb = Label(num.toString(), Skin())
+        parent?.apply {
+            val bitmapFont = BitmapFont(Gdx.files.internal("font/default.fnt"))
+            bitmapFont.data.scale(0.6f)
+            val lStyle = Label.LabelStyle(bitmapFont, Color.RED)
+            val lb = Label("-$num", lStyle)
+            lb.setPosition(this@RealPlayer.x+this@RealPlayer.width/2, this@RealPlayer.y+this@RealPlayer.height/2, Align.center)
+            addActor(lb)
+
+            val action1 = Actions.moveBy(0f, 100f, 2f, Interpolation.pow2Out)
+            val action2 = Actions.removeActor(lb)
+            lb.addAction(Actions.sequence(action1, action2))
+        }
     }
 
     override fun draw(batch: Batch?, parentAlpha: Float) {
         super.draw(batch, parentAlpha)
         stateTime += Gdx.graphics.deltaTime
-        var animations = when (status) {
-            Status.STANDING -> standingAnimations
-            Status.RUNNING -> runningAnimations
-            Status.IN_FIGHTING -> standingAnimations
+        var anim:Animation<TextureRegion>? = null
+        anim = when (status) {
+            Status.STANDING -> {standingAnimations[direction.index]}
+            Status.RUNNING -> {runningAnimations[direction.index]}
+            Status.IN_FIGHTING -> {
+                when(faceTo){
+                    FaceTo.LEFT->fightingStandingLeftAnimation
+                    FaceTo.RIGHT->fightingStandingRightAnimation
+                }
+            }
+            Status.FIGHTING_BE_ATTACK->{
+                val anim = when(faceTo){
+                    FaceTo.RIGHT->fightingBeAttackRightAnimation
+                    FaceTo.LEFT->fightingBeAttackLeftAnimation
+                }
+                if (anim.isAnimationFinished(stateTime)){
+                    fighting(Direction.Right)
+                    fightingStandingRightAnimation
+                } else {
+                    anim
+                }
+            }
             Status.FIGHTING_MAGIC -> {
                 val anim = fightingAttackMagicAnimations[direction.index]
                 if (anim.isAnimationFinished(stateTime)){
                     fighting(Direction.Right)
-                    standingAnimations
+                    fightingStandingRightAnimation
                 } else {
-                    fightingAttackMagicAnimations
+                    fightingAttackMagicAnimations[direction.index]
                 }
             }
-            else -> standingAnimations
+            Status.FIGHTING_DEAD->fightingDeadAnimation
+            else -> fightingStandingRightAnimation
         }
-        val anim = animations[direction.index]
+//        val anim = animations[direction.index]
 //        println("Draw: $originX - $originY")
         batch?.draw(anim.getKeyFrame(stateTime, true), x, y)
     }
